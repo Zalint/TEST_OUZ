@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Rappels d'Événements</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📅 Gestionnaire de Rappels</h1>
+            <p class="subtitle">Créez des événements et recevez des rappels automatiques</p>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item">
+                <span class="stat-value" id="totalEvents">0</span>
+                <span class="stat-label">Événements</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="totalReminders">0</span>
+                <span class="stat-label">Rappels actifs</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="emailsSent">0</span>
+                <span class="stat-label">Emails envoyés</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="showCreateEventModal()">
+                ➕ Nouvel Événement
+            </button>
+            <button class="btn btn-secondary" onclick="runScheduler()">
+                🔄 Exécuter les Rappels
+            </button>
+            <button class="btn btn-info" onclick="showEmailHistory()">
+                📧 Historique Emails
+            </button>
+        </div>
+
+        <!-- Alert/Message Box -->
+        <div id="alertBox" class="alert" style="display: none;"></div>
+
+        <!-- Events List -->
+        <div class="section">
+            <h2>📋 Mes Événements</h2>
+            <div id="eventsList" class="events-list">
+                <p class="loading">Chargement des événements...</p>
+            </div>
+        </div>
+
+        <!-- Modal: Create/Edit Event -->
+        <div id="eventModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('eventModal')">&times;</span>
+                <h2 id="modalTitle">➕ Nouvel Événement</h2>
+                
+                <form id="eventForm" onsubmit="handleEventSubmit(event)">
+                    <div class="form-group">
+                        <label for="eventUserId">Utilisateur *</label>
+                        <select id="eventUserId" required>
+                            <option value="">Sélectionner un utilisateur</option>
+                        </select>
+                        <small>
+                            <a href="#" onclick="showCreateUserModal(); return false;">➕ Créer un nouvel utilisateur</a>
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventName">Nom de l'événement *</label>
+                        <input type="text" id="eventName" required placeholder="Ex: Anniversaire de Jean">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDescription">Description</label>
+                        <textarea id="eventDescription" rows="3" placeholder="Détails de l'événement..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDate">Date de l'événement *</label>
+                        <input type="text" id="eventDate" required placeholder="YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, DD/MM/YY">
+                        <small>Formats acceptés: YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, DD/MM/YY</small>
+                    </div>
+
+                    <hr>
+
+                    <h3>🔔 Configuration du Rappel</h3>
+
+                    <div class="form-group">
+                        <label for="reminderEmail">Email du destinataire *</label>
+                        <input type="email" id="reminderEmail" required placeholder="exemple@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reminderDaysBefore">Nombre de jours avant *</label>
+                        <input type="number" id="reminderDaysBefore" min="0" required placeholder="Ex: 7">
+                        <small>Commencer à envoyer les rappels X jours avant l'événement</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reminderFrequency">Fréquence du rappel *</label>
+                        <select id="reminderFrequency" required onchange="handleFrequencyChange()">
+                            <option value="">Sélectionner une fréquence</option>
+                            <option value="once">Une seule fois</option>
+                            <option value="daily">Quotidien (chaque jour jusqu'à l'événement)</option>
+                            <option value="weekly">Hebdomadaire (chaque semaine)</option>
+                            <option value="custom">Personnalisé</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="customFrequencyGroup" style="display: none;">
+                        <label for="customFrequencyDays">Envoyer tous les X jours *</label>
+                        <input type="number" id="customFrequencyDays" min="1" placeholder="Ex: 3">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('eventModal')">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Créer l'événement</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal: Create User -->
+        <div id="userModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('userModal')">&times;</span>
+                <h2>👤 Nouvel Utilisateur</h2>
+                
+                <form id="userForm" onsubmit="handleUserSubmit(event)">
+                    <div class="form-group">
+                        <label for="userName">Nom complet *</label>
+                        <input type="text" id="userName" required placeholder="Ex: Jean Dupont">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userEmail">Email *</label>
+                        <input type="email" id="userEmail" required placeholder="jean.dupont@email.com">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Créer l'utilisateur</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal: Email History -->
+        <div id="historyModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeModal('historyModal')">&times;</span>
+                <h2>📧 Historique des Emails</h2>
+                
+                <div id="historyContent">
+                    <p class="loading">Chargement de l'historique...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Event Details -->
+        <div id="detailsModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('detailsModal')">&times;</span>
+                <h2>📋 Détails de l'Événement</h2>
+                
+                <div id="detailsContent">
+                    <p class="loading">Chargement...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
